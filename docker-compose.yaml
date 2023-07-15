@@ -1,0 +1,35 @@
+services:
+  postgres:
+        image: postgres
+        restart: always
+        environment:
+            - POSTGRES_USER=${PG_USER}
+            - POSTGRES_PASSWORD=${PG_PWD}
+            - POSTGRES_DB=${PG_DATABASE}
+        ports:
+            - 5432:5432
+  zookeeper:
+        image: bitnami/zookeeper
+        ports:
+            - 2181:2181
+        environment:
+            - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+        image: bitnami/kafka
+        depends_on:
+            - zookeeper
+        ports:
+            - 9092:9092
+        environment:
+            - ALLOW_PLAINTEXT_LISTENER=yes
+  api:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: mediasoft-restaurant
+        depends_on:
+          - postgres
+          - kafka
+        ports:
+            - ${HTTP_PORT}:8000
+            - ${GRPC_PORT}:8001
