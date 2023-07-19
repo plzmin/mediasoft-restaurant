@@ -11,7 +11,7 @@ import (
 
 func (s *Service) GetMenu(ctx context.Context,
 	req *restaurant.GetMenuRequest) (*restaurant.GetMenuResponse, error) {
-	menu, err := s.menuRepository.Get(ctx, req.OnDate.AsTime())
+	menu, products, err := s.menuRepository.Get(ctx, req.OnDate.AsTime())
 	if err != nil {
 		s.log.Error("failed get menu %v", err.Error())
 		return nil, status.Error(codes.Internal, err.Error())
@@ -22,30 +22,37 @@ func (s *Service) GetMenu(ctx context.Context,
 		OnDate:          timestamppb.New(menu.OnDate),
 		OpeningRecordAt: timestamppb.New(menu.OpeningRecordAt),
 		ClosingRecordAt: timestamppb.New(menu.ClosingRecordAt),
-		Salads:          modelToRestaurant(menu.Salads),
-		Garnishes:       modelToRestaurant(menu.Garnishes),
-		Meats:           modelToRestaurant(menu.Meats),
-		Soups:           modelToRestaurant(menu.Soups),
-		Drinks:          modelToRestaurant(menu.Drinks),
-		Desserts:        modelToRestaurant(menu.Desserts),
 		CreatedAt:       timestamppb.New(menu.CreatedAt),
+	}
+
+	for _, product := range products {
+		switch product.Type {
+		case restaurant.ProductType_PRODUCT_TYPE_SALAD:
+			m.Salads = append(m.Salads, appendProduct(product))
+		case restaurant.ProductType_PRODUCT_TYPE_GARNISH:
+			m.Garnishes = append(m.Garnishes, appendProduct(product))
+		case restaurant.ProductType_PRODUCT_TYPE_MEAT:
+			m.Meats = append(m.Meats, appendProduct(product))
+		case restaurant.ProductType_PRODUCT_TYPE_SOUP:
+			m.Soups = append(m.Soups, appendProduct(product))
+		case restaurant.ProductType_PRODUCT_TYPE_DRINK:
+			m.Drinks = append(m.Drinks, appendProduct(product))
+		case restaurant.ProductType_PRODUCT_TYPE_DESSERT:
+			m.Desserts = append(m.Desserts, appendProduct(product))
+		}
 	}
 	return &restaurant.GetMenuResponse{Menu: &m}, nil
 }
 
-func modelToRestaurant(pl []*model.Product) []*restaurant.Product {
-	var rpl []*restaurant.Product
-	for _, p := range pl {
-		rp := restaurant.Product{
-			Uuid:        p.Uuid.String(),
-			Name:        p.Name,
-			Description: p.Description,
-			Type:        restaurant.ProductType(p.Type),
-			Weight:      p.Weight,
-			Price:       p.Price,
-			CreatedAt:   timestamppb.New(p.CreatedAt),
-		}
-		rpl = append(rpl, &rp)
+func appendProduct(product *model.Product) *restaurant.Product {
+	p := &restaurant.Product{
+		Uuid:        product.Uuid.String(),
+		Name:        product.Name,
+		Description: product.Description,
+		Type:        product.Type,
+		Weight:      product.Weight,
+		Price:       product.Price,
+		CreatedAt:   timestamppb.New(product.CreatedAt),
 	}
-	return rpl
+	return p
 }

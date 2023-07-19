@@ -14,10 +14,10 @@ func New(db *sqlx.DB) *ProductSqlx {
 	return &ProductSqlx{db: db}
 }
 
-func (r *ProductSqlx) Create(ctx context.Context, p *model.Product) error {
-	const q = `insert into products (uuid, name, description, type, weight, price, created_at) 
-					values (:uuid, :name,:description,:type, :weight, :price, :created_at)`
-	_, err := r.db.NamedExecContext(ctx, q, p)
+func (r *ProductSqlx) Create(ctx context.Context, product *model.Product) error {
+	const q = `insert into products (uuid, name, description, type, weight, price) 
+					values (:uuid, :name,:description,:type, :weight, :price)`
+	_, err := r.db.NamedExecContext(ctx, q, product)
 	return err
 }
 

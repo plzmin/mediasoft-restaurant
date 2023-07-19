@@ -6,17 +6,17 @@ import (
 )
 
 type Menu struct {
-	Uuid            uuid.UUID  `json:"uuid" db:"uuid"`
-	OnDate          time.Time  `json:"on_date" db:"on_date"`
-	OpeningRecordAt time.Time  `json:"opening_record_at" db:"opening_record_at"`
-	ClosingRecordAt time.Time  `json:"closing_record_at" db:"closing_record_at"`
-	Salads          []*Product `json:"salads"`
-	Garnishes       []*Product `json:"garnishes"`
-	Meats           []*Product `json:"meats"`
-	Soups           []*Product `json:"soups"`
-	Drinks          []*Product `json:"drinks"`
-	Desserts        []*Product `json:"desserts"`
-	CreatedAt       time.Time  `json:"created_at" db:"created_at"`
+	Uuid            uuid.UUID `json:"uuid" db:"uuid"`
+	OnDate          time.Time `json:"on_date" db:"on_date"`
+	OpeningRecordAt time.Time `json:"opening_record_at" db:"opening_record_at"`
+	ClosingRecordAt time.Time `json:"closing_record_at" db:"closing_record_at"`
+	Salads          []string  `json:"salads"`
+	Garnishes       []string  `json:"garnishes"`
+	Meats           []string  `json:"meats"`
+	Soups           []string  `json:"soups"`
+	Drinks          []string  `json:"drinks"`
+	Desserts        []string  `json:"desserts"`
+	CreatedAt       time.Time `json:"created_at" db:"created_at"`
 }
 
 type MenuProduct struct {

@@ -8,7 +8,8 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func (s *Service) GetProductList(ctx context.Context, req *restaurant.GetProductListRequest) (*restaurant.GetProductListResponse, error) {
+func (s *Service) GetProductList(ctx context.Context,
+	req *restaurant.GetProductListRequest) (*restaurant.GetProductListResponse, error) {
 	list, err := s.productRepository.List(ctx)
 	if err != nil {
 		s.log.Error("failed get productList %v", err.Error())
@@ -21,7 +22,7 @@ func (s *Service) GetProductList(ctx context.Context, req *restaurant.GetProduct
 			Uuid:        p.Uuid.String(),
 			Name:        p.Name,
 			Description: p.Description,
-			Type:        restaurant.ProductType(p.Type),
+			Type:        p.Type,
 			Weight:      p.Weight,
 			Price:       p.Price,
 			CreatedAt:   timestamppb.New(p.CreatedAt),
