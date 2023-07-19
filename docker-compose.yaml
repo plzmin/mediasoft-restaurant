@@ -1,35 +1,39 @@
+version: '3'
 services:
-  postgres:
+  restaurant_db:
         image: postgres
         restart: always
         environment:
             - POSTGRES_USER=${PG_USER}
             - POSTGRES_PASSWORD=${PG_PWD}
             - POSTGRES_DB=${PG_DATABASE}
+        volumes:
+          - ./migrations/000001_init_schema.up.sql:/docker-entrypoint-initdb.d/000001_init_schema.up.sql
+          - ./postgres-data:/var/lib/postgresql/data
         ports:
-            - 5432:5432
-  zookeeper:
-        image: bitnami/zookeeper
-        ports:
-            - 2181:2181
-        environment:
-            - ALLOW_ANONYMOUS_LOGIN=yes
-  kafka:
-        image: bitnami/kafka
-        depends_on:
-            - zookeeper
-        ports:
-            - 9092:9092
-        environment:
-            - ALLOW_PLAINTEXT_LISTENER=yes
-  api:
+            - "5433:5432"
+        healthcheck:
+          test: [ "CMD-SHELL", "pg_isready -U ${PG_USER} -d ${PG_PWD}" ]
+          interval: 30s
+          timeout: 10s
+          retries: 5
+        networks:
+          - mediasoft-task
+
+  restaurant:
         build:
             context: .
             dockerfile: Dockerfile
         image: mediasoft-restaurant
         depends_on:
-          - postgres
-          - kafka
+          restaurant_db:
+            condition: service_healthy
         ports:
-            - ${HTTP_PORT}:8000
-            - ${GRPC_PORT}:8001
+            - "8002:8002"
+            - "8003:8003"
+        networks:
+          - mediasoft-task
+
+networks:
+  mediasoft-task:
+    external: true

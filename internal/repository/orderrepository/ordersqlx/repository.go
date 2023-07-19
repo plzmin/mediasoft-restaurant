@@ -2,7 +2,7 @@ package ordersqlx
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"github.com/jmoiron/sqlx"
 	"restaurant/internal/model"
 	"time"
@@ -21,32 +21,28 @@ func (r *OrderSqlx) Create(order *model.Order) error {
 	if err != nil {
 		return err
 	}
-	const q = `insert into orders (uuid, user_uuid, created_at) values(:uuid, :user_uuid, :created_at)`
+	const q = `insert into orders (uuid, user_uuid) values(:uuid, :user_uuid)`
 	_, err = tx.NamedExec(q, order)
 	if err != nil {
-		err = tx.Rollback()
+		errRollback := tx.Rollback()
 		if err != nil {
-			return err
+			return errors.Join(err, errRollback)
 		}
-		return err
 	}
-	var orderItemq = `insert into order_item(order_uuid, count, product_uuid) values `
+
+	orderItemq := `insert into order_item(order_uuid, count, product_uuid) values ($1, $2, $3)`
 	for _, orderItems := range [][]*model.OrderItem{order.Salads, order.Soups, order.Drinks, order.Desserts, order.Meats, order.Garnishes} {
 		for _, orderItem := range orderItems {
-			orderItemq += fmt.Sprintf("($%s,$%d,$%s),", order.Uuid, orderItem.Count, orderItem.ProductUuid)
+			_, err := tx.Exec(orderItemq, order.Uuid, orderItem.Count, orderItem.ProductUuid)
+			if err != nil {
+				errRollback := tx.Rollback()
+				if err != nil {
+					return errors.Join(err, errRollback)
+				}
+			}
 		}
 	}
-
-	_, err = tx.Exec(orderItemq[:len(orderItemq)-1])
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	return nil
+	return tx.Commit()
 }
 
 func (r *OrderSqlx) Get(ctx context.Context, time time.Time) ([]*model.TotalOrder, error) {

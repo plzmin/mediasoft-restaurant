@@ -56,23 +56,22 @@ func runGRPCServer(log *logger.Logger, cfg config.Config, s *grpc.Server) {
 		}
 	}(consumer)
 
-	topic := "order"
-	consumer.Consume(topic)
+	consumer.Consume(cfg.Topic)
 
-	с, err := client.New(cfg)
+	customer, err := client.New(cfg)
 	if err != nil {
 		log.Fatal("failed get conn customer %v", err.Error())
 	}
-	defer func(с *client.CustomerClient) {
-		err := с.Close()
+	defer func(customer *client.CustomerClient) {
+		err := customer.Close()
 		if err != nil {
 			log.Fatal("failed get conn customer %v", err.Error())
 		}
-	}(с)
+	}(customer)
 
 	productService := productservice.New(log, productsqlx.New(db))
 	menuService := menuservice.New(log, menusqlx.New(db))
-	orderService := orderservice.New(log, с, ordersqlx.New(db))
+	orderService := orderservice.New(log, customer, ordersqlx.New(db))
 	restaurant.RegisterProductServiceServer(s, productService)
 	restaurant.RegisterMenuServiceServer(s, menuService)
 	restaurant.RegisterOrderServiceServer(s, orderService)

@@ -21,3 +21,10 @@ type OrderItem struct {
 	Count       int32     `json:"count" db:"count"`
 	ProductUuid uuid.UUID `json:"product_uuid" db:"product_uuid"`
 }
+
+type OrderByOffice struct {
+	OfficeUuid    string
+	OfficeName    string
+	OfficeAddress string
+	Result        map[uuid.UUID]int64
+}

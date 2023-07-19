@@ -14,7 +14,7 @@ type Consumer struct {
 	orderRepository orderrepository.OrderRepository
 }
 
-func New(brokers []string, log *logger.Logger, orderRepository orderrepository.OrderRepository) (*Consumer, error) {
+func New(brokers []string, logger *logger.Logger, orderRepository orderrepository.OrderRepository) (*Consumer, error) {
 	cfg := sarama.NewConfig()
 	cfg.Consumer.Return.Errors = true
 	consumer, err := sarama.NewConsumer(brokers, cfg)
@@ -22,14 +22,13 @@ func New(brokers []string, log *logger.Logger, orderRepository orderrepository.O
 		return nil, err
 	}
 	return &Consumer{
-		log:             log,
+		log:             logger,
 		consumer:        consumer,
 		orderRepository: orderRepository,
 	}, err
 }
 
 func (c *Consumer) Consume(topic string) {
-
 	c.log.Info("Consuming partition of topic %s", topic)
 	partitionList, err := c.consumer.Partitions(topic)
 	if err != nil {
@@ -49,6 +48,7 @@ func (c *Consumer) Consume(topic string) {
 			}
 		}(pc)
 	}
+
 }
 
 func (c *Consumer) Close() error {
