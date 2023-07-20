@@ -11,6 +11,7 @@ import (
 
 func (s *Service) GetMenu(ctx context.Context,
 	req *restaurant.GetMenuRequest) (*restaurant.GetMenuResponse, error) {
+
 	menu, products, err := s.menuRepository.Get(ctx, req.OnDate.AsTime())
 	if err != nil {
 		s.log.Error("failed get menu %v", err.Error())
