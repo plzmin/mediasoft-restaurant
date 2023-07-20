@@ -13,11 +13,6 @@ import (
 func (s *Service) CreateProduct(ctx context.Context,
 	req *restaurant.CreateProductRequest) (*restaurant.CreateProductResponse, error) {
 
-	if err := req.ValidateAll(); err != nil {
-		s.log.Warn("not valid CreateProductRequest %v", err.Error())
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-
 	product := model.Product{
 		Uuid:        uuid.New(),
 		Name:        req.Name,

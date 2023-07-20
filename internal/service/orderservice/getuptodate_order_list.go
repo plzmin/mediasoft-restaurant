@@ -12,7 +12,7 @@ import (
 
 func (s *Service) GetUpToDateOrderList(ctx context.Context,
 	req *restaurant.GetUpToDateOrderListRequest) (*restaurant.GetUpToDateOrderListResponse, error) {
-	orders, err := s.orderRepository.Get(ctx, time.Now()) //.Add(-24*time.Hour))
+	orders, err := s.orderRepository.Get(ctx, time.Now().Add(-24*time.Hour))
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
